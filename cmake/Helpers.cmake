@@ -1,0 +1,6 @@
+macro(path_linux_to_win MsysPath ResultingPath)
+    string(REGEX REPLACE "^/([a-zA-Z])/" "\\1:/" ${ResultingPath} "${MsysPath}")
+endmacro()
+macro(path_win_to_linux MsysPath ResultingPath)
+    string(REGEX REPLACE "^([a-zA-Z]):/" "/\\1/" ${ResultingPath} "${MsysPath}")
+endmacro()
