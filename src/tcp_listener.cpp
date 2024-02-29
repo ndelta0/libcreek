@@ -1,4 +1,5 @@
 #include "tcp_listener.hpp"
+#include "internal.hpp"
 #include <memory>
 #include <stdexcept>
 
@@ -88,9 +89,10 @@ TcpStream TcpListener::accept() const
 {
   native::sockaddr_storage addr{};
   types::socket_length_t addrlen = sizeof(native::sockaddr_storage);
-  types::socket_t clientSock = native::accept(m_socket,
-                                              reinterpret_cast<native::sockaddr *>(&addr), // NOLINT(*-pro-type-reinterpret-cast) must be used to write to addr
-                                        &addrlen);
+  types::socket_t clientSock = native::accept(
+    m_socket,
+    reinterpret_cast<native::sockaddr *>(&addr), // NOLINT(*-pro-type-reinterpret-cast) must be used to write to addr
+    &addrlen);
   if (clientSock == INVALID_SOCKET)
   {
     throw std::runtime_error("Failed to accept connection: " + internal::lastError());
@@ -100,13 +102,13 @@ TcpStream TcpListener::accept() const
   if (addr.ss_family == static_cast<int>(types::EAddressType::IPv4))
   {
     const types::socket_address_ipv4_t &ipv4Native =
-        internal::bitCastNum<types::socket_address_t, types::socket_address_ipv4_t>(addr, addrlen);
+      internal::bitCastNum<types::socket_address_t, types::socket_address_ipv4_t>(addr, addrlen);
     address = std::make_shared<types::IPv4Address>(ipv4Native);
   }
   else if (addr.ss_family == static_cast<int>(types::EAddressType::IPv6))
   {
     const types::socket_address_ipv6_t &ipv6Native =
-        internal::bitCastNum<types::socket_address_t, types::socket_address_ipv6_t>(addr, addrlen);
+      internal::bitCastNum<types::socket_address_t, types::socket_address_ipv6_t>(addr, addrlen);
     address = std::make_shared<types::IPv6Address>(ipv6Native);
   }
   else

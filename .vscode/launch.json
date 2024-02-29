@@ -1,0 +1,26 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb-mi",
+      "request": "launch",
+      "name": "Launch Program",
+      "target": "${workspaceFolder}/build/examples/00_test/example_00_test",
+      "cwd": "${workspaceRoot}",
+      "valuesFormatting": "prettyPrinters",
+      "preLaunchTask": "CMake: build examples/00_test"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug",
+      "program": "${workspaceFolder}/build/examples/00_test/example_00_test",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "CMake: build examples/00_test"
+    }
+  ]
+}

@@ -1,8 +1,12 @@
 #pragma once
 
+#include "types/address.hpp"
+#include "types/natives.hpp"
 #include <cstddef>
 #include <cstring>
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace creek
 {
@@ -13,7 +17,8 @@ TDest bitCast(const TSrc &src)
 {
   const size_t srcSize = sizeof(TSrc);
   const size_t destSize = sizeof(TDest);
-  static_assert(destSize >= srcSize, "Size of destination type must be greater than or equal to the size of the source type");
+  static_assert(destSize >= srcSize,
+                "Size of destination type must be greater than or equal to the size of the source type");
   TDest dest;
   if (destSize > srcSize)
   {
@@ -25,7 +30,7 @@ TDest bitCast(const TSrc &src)
 }
 
 template <typename TSrc, typename TDest>
-TDest bitCastNum(const TSrc &src, const size_t count)
+TDest bitCastNum(const TSrc &src, size_t count)
 {
   const size_t srcSize = sizeof(TSrc);
   const size_t destSize = sizeof(TDest);
@@ -40,5 +45,10 @@ TDest bitCastNum(const TSrc &src, const size_t count)
 }
 
 std::string lastError();
+
+std::vector<std::shared_ptr<types::InetAddress>> resolve(const std::string &host,
+                                                         const std::string &service,
+                                                         types::EAddressType inetType,
+                                                         types::ESocketType sockType);
 } // namespace internal
 } // namespace creek

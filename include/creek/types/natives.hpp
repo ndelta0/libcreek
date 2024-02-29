@@ -6,6 +6,8 @@
 
 namespace creek
 {
+using byte_t = uint8_t;
+
 namespace native
 {
 #ifdef _WIN32
@@ -13,19 +15,20 @@ namespace native
 #define WIN32_LEAN_AND_MEAN
 #endif
 
-#include <Windows.h>
-#include <WinSock2.h>
 #include <WS2tcpip.h>
+#include <WinSock2.h>
+#include <Windows.h>
 
 #pragma comment(lib, "Ws2_32.lib")
 #elif __linux__
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
+#include <sys/epoll.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/epoll.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
 #else
 #error "TODO: Platform not implemented"
 #endif
@@ -56,8 +59,16 @@ using socket_length_t = creek::native::socklen_t;
 
 enum class EAddressType : creek::native::sa_family_t // NOLINT(*-enum-size)
 {
+  Unknown = AF_UNSPEC,
+  Unix = AF_UNIX,
   IPv4 = AF_INET,
   IPv6 = AF_INET6,
+};
+
+enum class ESocketType
+{
+  TCP = native::SOCK_STREAM,
+  UDP = native::SOCK_DGRAM,
 };
 #else
 #error "TODO: Platform not implemented"

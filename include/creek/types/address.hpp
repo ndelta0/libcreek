@@ -1,132 +1,169 @@
 #pragma once
 
-#include "../internal.hpp"
 #include "natives.hpp"
 #include <array>
-#include <string>
 #include <stdexcept>
-#include <ostream>
+#include <string>
 
-namespace creek { namespace types {
-  struct Address {
-    Address() = default;
+namespace creek
+{
+namespace internal
+{
+template <typename TSrc, typename TDest>
+extern TDest bitCast(const TSrc &src);
 
-    Address(const Address &) = default;
+template <typename TSrc, typename TDest>
+extern TDest bitCastNum(const TSrc &src, size_t count);
+} // namespace internal
+namespace types
+{
+struct Address
+{
+  Address() = default;
 
-    Address &operator=(const Address &) = default;
+  Address(const Address &) = default;
 
-    Address(Address &&) = default;
+  Address &operator=(const Address &) = default;
 
-    Address &operator=(Address &&) = default;
+  Address(Address &&) = default;
 
-    virtual ~Address() = default;
+  Address &operator=(Address &&) = default;
 
-    virtual EAddressType type() const {
-      throw std::runtime_error("Called base Address::type() method. This should not happen.");
-    }
+  virtual ~Address() = default;
 
-    virtual socket_length_t size() const {
-      throw std::runtime_error("Called base Address::size() method. This should not happen.");
-    }
+  virtual EAddressType type() const
+  {
+    throw std::runtime_error("Called base Address::type() method. This should not happen.");
+  }
 
-    virtual native::sockaddr *data() const {
-      throw std::runtime_error("Called base Address::data() method. This should not happen.");
-    }
-  };
+  virtual socket_length_t size() const
+  {
+    throw std::runtime_error("Called base Address::size() method. This should not happen.");
+  }
 
-  struct InetAddress : public Address {
-    virtual std::string ip() const {
-      throw std::runtime_error("Called base InetAddress::ip() method. This should not happen.");
-    }
+  virtual native::sockaddr *data() const
+  {
+    throw std::runtime_error("Called base Address::data() method. This should not happen.");
+  }
+};
 
-    virtual uint16_t port() const {
-      throw std::runtime_error("Called base InetAddress::port() method. This should not happen.");
-    }
-  };
+struct InetAddress : public Address
+{
+  virtual std::string ip() const
+  {
+    throw std::runtime_error("Called base InetAddress::ip() method. This should not happen.");
+  }
 
-  struct IPv4Address : public InetAddress {
-    IPv4Address(const std::string &ip, uint16_t port) // NOLINT(*-identifier-length)
-    {
-      address.sin_family = static_cast<native::sa_family_t>(EAddressType::IPv4);
-      address.sin_port = native::htons(port);
-      inet_pton(static_cast<int>(EAddressType::IPv4), ip.c_str(), &address.sin_addr);
-    }
+  virtual uint16_t port() const
+  {
+    throw std::runtime_error("Called base InetAddress::port() method. This should not happen.");
+  }
+};
 
-    explicit IPv4Address(types::socket_address_ipv4_t addr) : address(addr) {}
+struct IPv4Address : public InetAddress
+{
+  IPv4Address(const std::string &ip, uint16_t port) // NOLINT(*-identifier-length)
+  {
+    address.sin_family = static_cast<native::sa_family_t>(EAddressType::IPv4);
+    address.sin_port = native::htons(port);
+    inet_pton(static_cast<int>(EAddressType::IPv4), ip.c_str(), &address.sin_addr);
+  }
 
-    socket_address_ipv4_t address{};
+  explicit IPv4Address(types::socket_address_ipv4_t addr) : address(addr)
+  {
+  }
 
-    EAddressType type() const override {
-      return EAddressType::IPv4;
-    }
+  socket_address_ipv4_t address{};
 
-    socket_length_t size() const override {
-      return sizeof(socket_address_t);
-    }
+  EAddressType type() const override
+  {
+    return EAddressType::IPv4;
+  }
 
-    native::sockaddr *data() const override {
-      return (native::sockaddr *) &address; // NOLINT(*-pro-type-cstyle-cast)
-    }
+  socket_length_t size() const override
+  {
+    return sizeof(socket_address_t);
+  }
 
-    std::string ip() const override {
-      std::array<char, INET_ADDRSTRLEN> buffer{};
-      inet_ntop(static_cast<int>(EAddressType::IPv4), &address.sin_addr, buffer.data(), INET_ADDRSTRLEN);
-      return buffer.data();
-    }
+  native::sockaddr *data() const override
+  {
+    return (native::sockaddr *)&address; // NOLINT(*-pro-type-cstyle-cast)
+  }
 
-    uint16_t port() const override {
-      return native::ntohs(address.sin_port);
-    }
+  std::string ip() const override
+  {
+    std::array<char, INET_ADDRSTRLEN> buffer{};
+    inet_ntop(static_cast<int>(EAddressType::IPv4), &address.sin_addr, buffer.data(), INET_ADDRSTRLEN);
+    return buffer.data();
+  }
 
-    static IPv4Address any(uint16_t port) {
-      return {"0.0.0.0", port};
-    }
+  uint16_t port() const override
+  {
+    return native::ntohs(address.sin_port);
+  }
 
-    static IPv4Address loopback(uint16_t port) {
-      return {"127.0.0.1", port};
-    }
-  };
+  static IPv4Address any(uint16_t port)
+  {
+    return {"0.0.0.0", port};
+  }
 
-  struct IPv6Address : public InetAddress {
-    IPv6Address(const std::string &ip, uint16_t port) // NOLINT(*-identifier-length)
-    {
-      address.sin6_family = static_cast<native::sa_family_t>(EAddressType::IPv6);
-      address.sin6_port = native::htons(port);
-      inet_pton(static_cast<int>(EAddressType::IPv6), ip.c_str(), &address.sin6_addr);
-    }
+  static IPv4Address loopback(uint16_t port)
+  {
+    return {"127.0.0.1", port};
+  }
+};
 
-    explicit IPv6Address(types::socket_address_ipv6_t addr) : address(addr) {}
+struct IPv6Address : public InetAddress
+{
+  IPv6Address(const std::string &ip, uint16_t port) // NOLINT(*-identifier-length)
+  {
+    address.sin6_family = static_cast<native::sa_family_t>(EAddressType::IPv6);
+    address.sin6_port = native::htons(port);
+    inet_pton(static_cast<int>(EAddressType::IPv6), ip.c_str(), &address.sin6_addr);
+  }
 
-    socket_address_ipv6_t address{};
+  explicit IPv6Address(types::socket_address_ipv6_t addr) : address(addr)
+  {
+  }
 
-    EAddressType type() const override {
-      return EAddressType::IPv6;
-    }
+  socket_address_ipv6_t address{};
 
-    socket_length_t size() const override {
-      return sizeof(socket_address_t);
-    }
+  EAddressType type() const override
+  {
+    return EAddressType::IPv6;
+  }
 
-    native::sockaddr *data() const override {
-      return (native::sockaddr *) &address; // NOLINT(*-pro-type-cstyle-cast)
-    }
+  socket_length_t size() const override
+  {
+    return sizeof(socket_address_t);
+  }
 
-    std::string ip() const override {
-      std::array<char, INET6_ADDRSTRLEN> buffer{};
-      inet_ntop(static_cast<int>(EAddressType::IPv6), &address.sin6_addr, buffer.data(), INET6_ADDRSTRLEN);
-      return buffer.data();
-    }
+  native::sockaddr *data() const override
+  {
+    return (native::sockaddr *)&address; // NOLINT(*-pro-type-cstyle-cast)
+  }
 
-    uint16_t port() const override {
-      return native::ntohs(address.sin6_port);
-    }
+  std::string ip() const override
+  {
+    std::array<char, INET6_ADDRSTRLEN> buffer{};
+    inet_ntop(static_cast<int>(EAddressType::IPv6), &address.sin6_addr, buffer.data(), INET6_ADDRSTRLEN);
+    return buffer.data();
+  }
 
-    static IPv6Address any(uint16_t port) {
-      return {"::", port};
-    }
+  uint16_t port() const override
+  {
+    return native::ntohs(address.sin6_port);
+  }
 
-    static IPv6Address loopback(uint16_t port) {
-      return {"::1", port};
-    }
-  };
-}}
+  static IPv6Address any(uint16_t port)
+  {
+    return {"::", port};
+  }
+
+  static IPv6Address loopback(uint16_t port)
+  {
+    return {"::1", port};
+  }
+};
+} // namespace types
+} // namespace creek
